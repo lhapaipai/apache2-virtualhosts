@@ -1,0 +1,49 @@
+APACHE_CONF="/etc/httpd/conf"
+
+
+function _a2_list_available_sites() {
+  local DOMAIN
+  DOMAIN=${COMP_WORDS[COMP_CWORD]}
+
+  DOMAINS=$(ls "$APACHE_CONF/sites-available" | while read -r LINE
+  do
+    FILENAME=$(basename "$LINE")
+    echo "${FILENAME%\.conf}"
+  done)
+
+  COMPREPLY=( $(compgen -W "$DOMAINS" $DOMAIN ) )
+}
+
+function _a2_list_enabled_sites() {
+  local DOMAIN
+  DOMAIN=${COMP_WORDS[COMP_CWORD]}
+
+  DOMAINS=$(ls "$APACHE_CONF/sites-enabled" | while read -r LINE
+  do
+    FILENAME=$(basename "$LINE")
+    echo "${FILENAME%\.conf}"
+  done)
+
+  COMPREPLY=( $(compgen -W "$DOMAINS" $DOMAIN ) )
+}
+
+function _a2_list_disabled_sites() {
+  local DOMAIN
+  DOMAIN=${COMP_WORDS[COMP_CWORD]}
+
+  DOMAINS=$(ls "$APACHE_CONF/sites-available" | while read -r LINE
+  do
+    FILENAME=$(basename "$LINE")
+    if [ ! -L "$APACHE_CONF/sites-enabled/$FILENAME" ]
+    then
+      echo "${FILENAME%\.conf}"
+    fi
+  done)
+
+  COMPREPLY=( $(compgen -W "$DOMAINS" $DOMAIN ) )
+}
+
+
+complete -F _a2_list_disabled_sites a2ensite
+complete -F _a2_list_enabled_sites a2dissite
+complete -F _a2_list_available_sites a2rmsite

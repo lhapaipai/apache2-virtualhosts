@@ -1,0 +1,22 @@
+#!/bin/bash
+
+APACHE_CONF="/etc/httpd/conf"
+
+for CONF_FILE in "$APACHE_CONF/sites-available"/*
+do
+  CONF_FILENAME=$(basename "$CONF_FILE")
+  if [ -L "$APACHE_CONF/sites-enabled/$CONF_FILENAME" ]; then
+    ENABLE="*"
+  else
+    ENABLE=" "
+  fi
+
+  HOSTNAME=$(awk '/ServerName/ { print $2 }' "$CONF_FILE")
+  DOCUMENT_ROOT=$(awk '/DocumentRoot/ { print $2 }' "$CONF_FILE")
+  # on retire les guillemets simples
+  DOCUMENT_ROOT=${DOCUMENT_ROOT:1:-1}
+  
+  [[ "$DOCUMENT_ROOT" =~ ^"$HOME"(/|$) ]] \
+    && DOCUMENT_ROOT="~${DOCUMENT_ROOT#$HOME}"
+  printf "%s %-50s %s\n" "$ENABLE" "$HOSTNAME" "$DOCUMENT_ROOT"
+done

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+USER=$(whoami)
+APACHE_CONF="/etc/httpd/conf"
+
+if [ "$USER" != root ]; then
+  echo "nécessite d'être exécuté en tant que root" >&2
+  exit 1
+fi
+
+[ -d "$APACHE_CONF/sites-enabled" ] && mkdir -p "$APACHE_CONF/sites-enabled"
+[ -d "$APACHE_CONF/sites-available" ] && mkdir -p "$APACHE_CONF/sites-available"
+
+grep -q '^IncludeOptional conf/sites-enabled/\*.conf$' $APACHE_CONF/httpd.conf \
+  || echo "IncludeOptional conf/sites-enabled/*.conf" >> $APACHE_CONF/httpd.conf

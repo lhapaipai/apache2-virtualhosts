@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#APACHE_USER=$(ps -aux | egrep '(httpd|apache2|apache)' | grep -v root | head -1 | awk '{ print $1 }')
+APACHE_CONF="/etc/httpd/conf"
+APACHE_LOG="/var/log/httpd"
+DOCUMENT_ROOT="$(pwd)"
+USER=$(whoami)
+EMAIL='postmaster@localhost'
+
+
+if [ $# -ne 1 ];
+then
+  printf "Usage: %s <domain>\n" "$(basename $0)" >&2
+  exit 1
+fi
+
+DOMAIN="$1"
+
+if [ "$USER" != root ]; then
+  echo "nécessite d'être exécuté en tant que root" >&2
+  exit 1
+fi
+
+if [ -f "$APACHE_CONF/sites-available/$DOMAIN.conf" ]
+then
+  echo "Un site est déjà référencé avec ce nom de domaine." >&2
+  exit 2
+fi
+
+echo "
+<VirtualHost *:80>
+  ServerAdmin $EMAIL
+  ServerName $DOMAIN
+  DocumentRoot '$DOCUMENT_ROOT'
+  <Directory '$DOCUMENT_ROOT'>
+    Options Indexes FollowSymLinks
+    AllowOverride all
+    Require all granted
+  </Directory>
+  ErrorLog $APACHE_LOG/$DOMAIN-error.log
+  CustomLog $APACHE_LOG/$DOMAIN-access.log combined
+</VirtualHost>
+" > "$APACHE_CONF/sites-available/$DOMAIN.conf"
+
+[ ! -L "$APACHE_CONF/sites-enabled/$DOMAIN.conf" ] \
+  && ln -s "$APACHE_CONF/sites-available/$DOMAIN.conf" \
+    "$APACHE_CONF/sites-enabled/$DOMAIN.conf"
+
+# On a besoin de lire littéralement les . donc \.
+grep -q "^127\.0\.0\.1  ${DOMAIN//./\\.}$" /etc/hosts \
+  || echo "127.0.0.1  $DOMAIN" >> /etc/hosts
+
+apachectl graceful

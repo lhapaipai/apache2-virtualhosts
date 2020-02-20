@@ -1,0 +1,28 @@
+#!/bin/bash
+
+APACHE_CONF="/etc/httpd/conf"
+USER=$(whoami)
+
+if [ $# -ne 1 ];
+then
+  printf "Usage: %s <domain>\n" "$(basename $0)" >&2
+  exit 1
+fi
+
+DOMAIN="$1"
+
+if [ "$USER" != root ]; then
+  echo "nécessite d'être exécuté en tant que root" >&2
+  exit 1
+fi
+
+if [ ! -f "$APACHE_CONF/sites-available/$DOMAIN.conf" ]
+then
+  echo "Aucun site référencé avec ce nom de domaine." >&2
+  exit 2
+fi
+
+[ -L "$APACHE_CONF/sites-enabled/$DOMAIN.conf" ] \
+  && rm "$APACHE_CONF/sites-enabled/$DOMAIN.conf"
+
+apachectl graceful
