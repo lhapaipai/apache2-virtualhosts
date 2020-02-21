@@ -1,8 +1,7 @@
 #!/bin/bash
 
-#APACHE_USER=$(ps -aux | egrep '(httpd|apache2|apache)' | grep -v root | head -1 | awk '{ print $1 }')
-APACHE_CONF="/etc/httpd/conf"
-APACHE_LOG="/var/log/httpd"
+APACHE_CONF="$(a2info confdir)"
+APACHE_LOG="$(a2info logdir)"
 DOCUMENT_ROOT="$(pwd)"
 USER=$(whoami)
 EMAIL='postmaster@localhost'
@@ -17,14 +16,14 @@ fi
 DOMAIN="$1"
 
 if [ "$USER" != root ]; then
-  echo "nécessite d'être exécuté en tant que root" >&2
-  exit 1
+  echo "need root privileges" >&2
+  exit 5
 fi
 
 if [ -f "$APACHE_CONF/sites-available/$DOMAIN.conf" ]
 then
-  echo "Un site est déjà référencé avec ce nom de domaine." >&2
-  exit 2
+  echo "A conf file already exist for this domain." >&2
+  exit 10
 fi
 
 echo "
@@ -47,7 +46,7 @@ echo "
     "$APACHE_CONF/sites-enabled/$DOMAIN.conf"
 
 # On a besoin de lire littéralement les . donc \.
-grep -q "^127\.0\.0\.1  ${DOMAIN//./\\.}$" /etc/hosts \
+grep -q "\<${DOMAIN//./\\.}\>" /etc/hosts \
   || echo "127.0.0.1  $DOMAIN" >> /etc/hosts
 
 apachectl graceful

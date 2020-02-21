@@ -1,0 +1,57 @@
+#!/bin/bash
+
+USER=$(whoami)
+
+APACHE_USER=$(ps -aux | grep -E '(httpd|apache2|apache)' | grep -v root | head -1 | awk '{ print $1 }')
+
+if [ -f "/etc/apache2/httpd.conf" ] || [ -f "/etc/apache2/apache2.conf" ]; then
+  APACHE_CONF="/etc/apache2"
+elif [ -f "/etc/httpd/httpd.conf" ]; then
+  APACHE_CONF="/etc/httpd"
+elif [ -f "/etc/httpd/conf/httpd.conf" ]; then
+  APACHE_CONF="/etc/httpd/conf"
+else
+  echo "Unable to find conf directory." >&2
+  exit 10
+fi
+
+if [ -d "/var/log/apache2" ]; then
+  APACHE_LOG="/var/log/apache2"
+elif [ -d "/var/log/apache" ]; then
+  APACHE_LOG="/var/log/apache"
+elif [ -d "/var/log/httpd" ]; then
+  APACHE_LOG="/var/log/httpd"
+else
+  echo "Unable to find log directory." >&2
+  exit 11
+fi
+
+ACTION="$1"
+
+case "$ACTION" in
+  logdir)
+    echo $APACHE_LOG
+    exit 0 ;;
+  confdir)
+    echo $APACHE_CONF
+    exit 0 ;;
+  user)
+    echo $APACHE_USER
+    exit 0 ;;
+  init)
+    if [ "$USER" != root ]; then
+      echo "need root privileges" >&2
+      exit 5
+    fi
+
+    [ -d "$APACHE_CONF/sites-enabled" ] && mkdir -p "$APACHE_CONF/sites-enabled"
+    [ -d "$APACHE_CONF/sites-available" ] && mkdir -p "$APACHE_CONF/sites-available"
+
+    grep -q '^IncludeOptional conf/sites-enabled/\*.conf$' $APACHE_CONF/httpd.conf \
+      || echo "IncludeOptional conf/sites-enabled/*.conf" >> $APACHE_CONF/httpd.conf
+    
+    exit 0
+    ;;
+esac
+
+

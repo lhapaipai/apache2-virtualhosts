@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APACHE_CONF="/etc/httpd/conf"
+APACHE_CONF="$(a2info confdir)"
 
 for CONF_FILE in "$APACHE_CONF/sites-available"/*
 do

@@ -1,4 +1,4 @@
-APACHE_CONF="/etc/httpd/conf"
+APACHE_CONF="$(a2info confdir)"
 
 
 function _a2_list_available_sites() {

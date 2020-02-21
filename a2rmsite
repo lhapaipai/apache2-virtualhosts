@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APACHE_CONF="/etc/httpd/conf"
+APACHE_CONF="$(a2info confdir)"
 USER=$(whoami)
 
 if [ $# -ne 1 ];
@@ -13,13 +13,13 @@ DOMAIN="$1"
 
 if [ ! -f "$APACHE_CONF/sites-available/$DOMAIN.conf" ]
 then
-  echo "Aucun site référencé avec ce nom de domaine." >&2
-  exit 2
+  echo "No configured site for this domain." >&2
+  exit 10
 fi
 
 if [ "$USER" != root ]; then
-  echo "nécessite d'être exécuté en tant que root" >&2
-  exit 1
+  echo "need root privileges" >&2
+  exit 5
 fi
 
 [ -L "$APACHE_CONF/sites-enabled/$DOMAIN.conf" ] \

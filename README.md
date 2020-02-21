@@ -31,11 +31,18 @@ This command remove this domain from your virtual hosts and remove the domain fr
 
 This command show all your virtual hosts (enabled are prefixed with *)
 
-### a2init
+### a2info
 
-`a2init`
+`a2info <action>`
 
-This command create your directories for your conf files.
+| Action  | Description                                               |
+| ------- | --------------------------------------------------------- |
+| logdir  | Get log directory (ex: /var/log/httpd )                   |
+| confdir | Get config directory (ex: /etc/httpd/conf )               |
+| user    | Get apache user name (ex: httpd )                         |
+| init    | This command create your directories for your conf files. |
+
+
 
 ### a2ensite
 
