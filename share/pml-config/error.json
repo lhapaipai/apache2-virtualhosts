@@ -1,0 +1,41 @@
+{
+  "apache1": {
+    "display" : "{{DOMAIN}} Error",
+    "path"    : "{{PATH}}",
+    "refresh" : 5,
+    "max"     : 10,
+    "notify"  : true,
+    "tags"    : ["{{DOMAIN}}"],
+    "homePath": "{{HOME}}",
+    "format"  : {
+      "type"         : "HTTPD 2.4",
+      "regex"        : "|^\\[(.*)\\] \\[(.*) (.*) (.*) (.*):(.*):(.*)\\.(.*) (.*)\\] \\[(.*):(.*)\\] \\[pid (.*)\\] .*\\[client (.*):(.*)\\] (.*)(, referer: (.*))*$|U",
+      "export_title" : "Log",
+      "match"        : {
+        "Server": 1,
+        "Date"    : {
+          "M" : 3,
+          "d" : 4,
+          "H" : 5,
+          "i" : 6,
+          "s" : 7,
+          "Y" : 9
+        },
+        "IP"       : 13,
+        "Log"      : 15,
+        "Severity" : 11,
+        "Referer"  : 17
+      },
+      "types": {
+        "Date"     : "date:d/m H:i:s/100",
+        "IP"       : "ip:http",
+        "Log"      : "preformatted",
+        "Severity" : "badge:severity",
+        "Referer"  : "link"
+      },
+      "exclude": {
+        "Log": ["@PHP Stack trace:@", "@PHP *[0-9]*\\. @"]
+      }
+    }
+  }  
+}

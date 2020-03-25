@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# List all virtual hosts and ask for deleting separate logs
+APACHE_CONF="$(a2info confdir)"
+
+for FILE in $APACHE_CONF/sites-available/* ; do
+  FILENAME=$(basename $FILE)
+
+  echo $FILENAME
+  read -p "log ? [O/n]" HAS_LOG
+  case $HAS_LOG in
+    [nN])
+      sed -i '/CustomLog/d; /ErrorLog/d' $FILE
+      ;;
+    *)
+      ;;
+  esac
+done

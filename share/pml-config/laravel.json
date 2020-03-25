@@ -1,0 +1,32 @@
+{
+  "php1": {
+    "display" : "{{DOMAIN}} Laravel",
+    "path"    : "{{PATH}}",
+    "count"   : 1,
+    "tags"    : ["{{DOMAIN}}"],
+    "refresh" : 5,
+    "max"     : 10,
+    "notify"  : true,
+    "homePath": "{{HOME}}",
+    "format"    : {
+        "multiline" : "Error",
+        "regex"     : "|^\\[(.*)\\] (.*)\\.(.*): (.*)( at (\\/(.*)):([0-9]*))*\\)$|U",
+        "match"     : {
+            "Date"     : 1,
+            "Env"      : 2,
+            "Severity" : 3,
+            "Error"    : 4,
+            "File"     : 6,
+            "Line"     : 8
+        },
+        "types" : {
+            "Date"     : "date:d/m H:i:s/100",
+            "Severity" : "badge:severity",
+            "Error"    : "prefake",
+            "Env"      : "txt",
+            "File"     : "txt\/-50",
+            "Line"     : "numeral"
+        }
+    }
+  }
+}

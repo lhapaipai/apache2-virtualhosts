@@ -1,0 +1,32 @@
+{
+  "php1": {
+    "display" : "{{DOMAIN}} Directus",
+    "path"    : "{{PATH}}",
+    "count"   : 1,
+    "tags"    : ["{{DOMAIN}}"],
+    "refresh" : 5,
+    "max"     : 10,
+    "notify"  : true,
+    "homePath": "{{HOME}}",
+    "format"    : {
+        "multiline" : "Message",
+        "regex"     : "|^\\[(.*)\\] (.*)\\[(.*)\\]\\.(.*): (.*): (.*) in (\\S*):([0-9]*)$|U",
+        "match"     : {
+            "Date"     : 1,
+            "Severity" : 4,
+            "Exception": 5,
+            "Message"  : 6,
+            "File"     : 7,
+            "Line"     : 8
+        },
+        "types" : {
+            "Date"     : "date:d/m H:i:s/100",
+            "Severity" : "badge:severity",
+            "Exception": "txt",
+            "Message"  : "prefake",
+            "File"     : "txt\/-50",
+            "Line"     : "numeral"
+        }
+    }
+  }
+}

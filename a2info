@@ -36,7 +36,13 @@ case "$ACTION" in
     echo $APACHE_CONF
     exit 0 ;;
   user)
-    echo $APACHE_USER
+    echo "$APACHE_USER"
+    exit 0 ;;
+  pmldir)
+    echo "/home/lhapaipai/projets/log-parser/pimpmylog/config.user.d"
+    exit 0 ;;
+  sharedir)
+    echo "/usr/share/a2-virtualhosts"
     exit 0 ;;
   init)
     if [ "$USER" != root ]; then
@@ -44,8 +50,8 @@ case "$ACTION" in
       exit 5
     fi
 
-    [ -d "$APACHE_CONF/sites-enabled" ] && mkdir -p "$APACHE_CONF/sites-enabled"
-    [ -d "$APACHE_CONF/sites-available" ] && mkdir -p "$APACHE_CONF/sites-available"
+    [ ! -d "$APACHE_CONF/sites-enabled" ] && mkdir -p "$APACHE_CONF/sites-enabled"
+    [ ! -d "$APACHE_CONF/sites-available" ] && mkdir -p "$APACHE_CONF/sites-available"
 
     grep -q '^IncludeOptional conf/sites-enabled/\*.conf$' $APACHE_CONF/httpd.conf \
       || echo "IncludeOptional conf/sites-enabled/*.conf" >> $APACHE_CONF/httpd.conf

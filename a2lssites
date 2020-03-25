@@ -11,6 +11,42 @@ do
     ENABLE=" "
   fi
 
+  SERVERS=$(awk '
+    /<VirtualHost/,/<\/VirtualHost/ {
+      if ($1 == "<VirtualHost") {
+        port = gensub(/^.*:([0-9]+).*$/, "\\1", "1", $2)
+      }
+
+      if ($1 == "ServerName") {
+        server = $2
+      }
+      if ($1 == "DocumentRoot") {
+        documentRoot = substr($2, 2, length($2) - 2)
+        documentRoot = gensub("^" ENVIRON["HOME"], "~", "1", documentRoot)
+      }
+
+      if ($1 == "</VirtualHost>") {
+        if (port == "443") {
+          protocol = "https://"
+        } else {
+          protocol = "http://"
+        }
+
+        if (port != "443" && port != "80") {
+          server = server ":" port
+        }
+        printf("%-60s %s\n", protocol server, documentRoot)
+      }
+    }  
+  ' "$CONF_FILE")
+
+  while read -r LINE; do
+    printf "%s %s\n" "$ENABLE" "$LINE"
+  done <<< "$SERVERS"
+
+done
+
+exit
   HOSTNAME=$(awk '/ServerName/ { print $2 }' "$CONF_FILE")
   DOCUMENT_ROOT=$(awk '/DocumentRoot/ { print $2 }' "$CONF_FILE")
   # on retire les guillemets simples
@@ -19,4 +55,3 @@ do
   [[ "$DOCUMENT_ROOT" =~ ^"$HOME"(/|$) ]] \
     && DOCUMENT_ROOT="~${DOCUMENT_ROOT#$HOME}"
   printf "%s %-50s %s\n" "$ENABLE" "$HOSTNAME" "$DOCUMENT_ROOT"
-done

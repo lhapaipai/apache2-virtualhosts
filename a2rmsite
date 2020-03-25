@@ -1,6 +1,7 @@
 #!/bin/bash
 
 APACHE_CONF="$(a2info confdir)"
+PML_CONF="$(a2info pmldir)"
 USER=$(whoami)
 
 if [ $# -ne 1 ];
@@ -27,6 +28,14 @@ fi
 
 [ -f "$APACHE_CONF/sites-available/$DOMAIN.conf" ] \
   && rm "$APACHE_CONF/sites-available/$DOMAIN.conf"
+
+[ -f "$PML_CONF/$DOMAIN-access.json" ] \
+  && rm "$PML_CONF/$DOMAIN-access.json"
+
+[ -f "$PML_CONF/$DOMAIN-error.json" ] \
+  && rm "$PML_CONF/$DOMAIN-error.json"
+
+
 
 # On a besoin de lire littéralement les . donc \.
 # \<  \> spécifie un caractère délimitateur de fin de mot

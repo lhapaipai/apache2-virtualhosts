@@ -5,7 +5,8 @@ APACHE_LOG="$(a2info logdir)"
 DOCUMENT_ROOT="$(pwd)"
 USER=$(whoami)
 EMAIL='postmaster@localhost'
-
+PML_CONF="$(a2info pmldir)"
+SHARE_DIR="$(a2info sharedir)"
 
 if [ $# -ne 1 ];
 then
@@ -26,7 +27,36 @@ then
   exit 10
 fi
 
-echo "
+read -p "Separate Log Files ? [y/N]" SEPARATE_LOGS
+case $SEPARATE_LOGS in
+  [oOyY])
+    SEPARATE_LOGS=1
+    LOGFILE="ErrorLog $APACHE_LOG/$DOMAIN-error.log\n"
+    LOGFILE="$LOGFILE  CustomLog $APACHE_LOG/$DOMAIN-access.log vcombined"
+    ;;
+  *)
+    SEPARATE_LOGS=0
+    LOGFILE=""
+    ;;
+esac
+
+if [ "$SEPARATE_LOGS" ]; then
+  cp $SHARE_DIR/pml-config/access.json $PML_CONF/$DOMAIN-access.json
+  cp $SHARE_DIR/pml-config/error.json $PML_CONF/$DOMAIN-error.json
+  
+  ACCESS_ESCAPED="$(echo $APACHE_LOG/$DOMAIN-access.log | sed 's/\//\\\//g')"
+  ERROR_ESCAPED="$(echo $APACHE_LOG/$DOMAIN-error.log | sed 's/\//\\\//g')"
+  HOME_ESCAPED="$(echo $DOCUMENT_ROOT | sed 's/\//\\\//g')"
+
+  sed -i "/{{DOMAIN}}/s//$DOMAIN/g" $PML_CONF/$DOMAIN-access.json
+  sed -i "/{{PATH}}/s//$ACCESS_ESCAPED/g" $PML_CONF/$DOMAIN-access.json
+
+  sed -i "/{{DOMAIN}}/s//$DOMAIN/g" $PML_CONF/$DOMAIN-error.json
+  sed -i "/{{PATH}}/s//$ERROR_ESCAPED/g" $PML_CONF/$DOMAIN-error.json
+  sed -i "/{{HOME}}/s//$HOME_ESCAPED/g" $PML_CONF/$DOMAIN-error.json
+fi
+
+echo -e "
 <VirtualHost *:80>
   ServerAdmin $EMAIL
   ServerName $DOMAIN
@@ -36,8 +66,7 @@ echo "
     AllowOverride all
     Require all granted
   </Directory>
-  ErrorLog $APACHE_LOG/$DOMAIN-error.log
-  CustomLog $APACHE_LOG/$DOMAIN-access.log combined
+  $LOGFILE
 </VirtualHost>
 " > "$APACHE_CONF/sites-available/$DOMAIN.conf"
 
