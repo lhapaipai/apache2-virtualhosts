@@ -1,0 +1,77 @@
+#!/bin/bash
+
+APACHE_CONF="$(a2info confdir)"
+PML_CONF="/home/lhapaipai/projets/log-parser/pimpmylog/config.user.d"
+SHARE_DIR="$(a2info sharedir)"
+
+for FILE in $PML_CONF/* ; do
+  FILENAME=$(basename $FILE)
+  if [[ $FILENAME == "00-common-access.json" \
+    || $FILENAME == "00-common-error.json" ]]; then
+      continue
+  fi
+
+  rm "$FILE"
+done
+
+
+for FILE in $APACHE_CONF/sites-available/* ; do
+
+  grep -q 'CustomLog' $FILE
+  if [[ $? != 0 ]]; then
+    continue
+  fi
+
+  awk '
+  /<VirtualHost/,/<\/VirtualHost/ {
+    if ($1 == "<VirtualHost") {
+      port = gensub(/^.*:([0-9]+).*$/, "\\1", "1", $2)
+    }
+
+    if ($1 == "ServerName") {
+      DOMAIN = $2
+    }
+    if ($1 == "DocumentRoot") {
+      DOCUMENT_ROOT = substr($2, 2, length($2) - 2)
+    }
+    if ($1 == "ErrorLog") {
+      ERROR_LOG_FILE = substr($2, 2, length($2) - 2)
+    }
+    if ($1 == "CustomLog") {
+      ACCESS_LOG_FILE = substr($2, 2, length($2) - 2)
+    }
+
+    if ($1 == "</VirtualHost>") {
+      print DOMAIN, DOCUMENT_ROOT, ERROR_LOG_FILE, ACCESS_LOG_FILE
+    }
+  }
+  
+  ' $FILE | while read DOMAIN DOCUMENT_ROOT ERROR_LOG_FILE ACCESS_LOG_FILE
+  do
+    if [ -z "$DOCUMENT_ROOT" ] || [ -z "$ERROR_LOG_FILE" ] || [ -z "$ACCESS_LOG_FILE" ]; then
+      continue
+    fi
+    ACCESS_ESCAPED="$(echo "$ACCESS_LOG_FILE" | sed 's/\//\\\//g')"
+    ERROR_ESCAPED="$(echo "$ERROR_LOG_FILE" | sed 's/\//\\\//g')"
+    HOME_ESCAPED="$(echo "$DOCUMENT_ROOT" | sed 's/\//\\\//g')"
+
+    [ -f "$PML_CONF/$DOMAIN-access.json" ] \
+      && rm "$PML_CONF/$DOMAIN-access.json"
+
+    [ -f "$PML_CONF/$DOMAIN-error.json" ] \
+      && rm "$PML_CONF/$DOMAIN-error.json"
+
+    cp $SHARE_DIR/pml-config/access.json $PML_CONF/$DOMAIN-access.json
+    cp $SHARE_DIR/pml-config/error.json $PML_CONF/$DOMAIN-error.json
+
+    sed -i "/{{DOMAIN}}/s//$DOMAIN/g" $PML_CONF/$DOMAIN-access.json
+    sed -i "/{{PATH}}/s//$ACCESS_ESCAPED/g" $PML_CONF/$DOMAIN-access.json
+
+    sed -i "/{{DOMAIN}}/s//$DOMAIN/g" $PML_CONF/$DOMAIN-error.json
+    sed -i "/{{PATH}}/s//$ERROR_ESCAPED/g" $PML_CONF/$DOMAIN-error.json
+    sed -i "/{{HOME}}/s//$HOME_ESCAPED/g" $PML_CONF/$DOMAIN-error.json
+    echo $DOMAIN
+  done
+
+
+done
