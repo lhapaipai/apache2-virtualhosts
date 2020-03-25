@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ $# -ne 2 ];
+then
+  printf "Usage: %s <user>[:group] <dir>\n" "$(basename $0)" >&2
+  exit 1
+fi
+
+chown "$@"
+
+find "$2" -type d -print0 | xargs -0 chmod 775
+find "$2" -type f -print0 | xargs -0 chmod 664
