@@ -1,57 +1,10 @@
 #!/bin/bash
 
 APACHE_CONF="$(a2info confdir)"
+SHARE_DIR="$(a2info sharedir)"
 
-for CONF_FILE in "$APACHE_CONF/sites-available"/*
+for CONF_FILE in "$APACHE_CONF/sites-available"/*.conf
 do
-  CONF_FILENAME=$(basename "$CONF_FILE")
-  if [ -L "$APACHE_CONF/sites-enabled/$CONF_FILENAME" ]; then
-    ENABLE="*"
-  else
-    ENABLE=" "
-  fi
-
-  SERVERS=$(awk '
-    /<VirtualHost/,/<\/VirtualHost/ {
-      if ($1 == "<VirtualHost") {
-        port = gensub(/^.*:([0-9]+).*$/, "\\1", "1", $2)
-      }
-
-      if ($1 == "ServerName") {
-        server = $2
-      }
-      if ($1 == "DocumentRoot") {
-        documentRoot = substr($2, 2, length($2) - 2)
-        documentRoot = gensub("^" ENVIRON["HOME"], "~", "1", documentRoot)
-      }
-
-      if ($1 == "</VirtualHost>") {
-        if (port == "443") {
-          protocol = "https://"
-        } else {
-          protocol = "http://"
-        }
-
-        if (port != "443" && port != "80") {
-          server = server ":" port
-        }
-        printf("%-60s %s\n", protocol server, documentRoot)
-      }
-    }  
-  ' "$CONF_FILE")
-
-  while read -r LINE; do
-    printf "%s %s\n" "$ENABLE" "$LINE"
-  done <<< "$SERVERS"
-
+  awk -f $SHARE_DIR/find-sites.awk "$CONF_FILE"
 done
 
-exit
-  HOSTNAME=$(awk '/ServerName/ { print $2 }' "$CONF_FILE")
-  DOCUMENT_ROOT=$(awk '/DocumentRoot/ { print $2 }' "$CONF_FILE")
-  # on retire les guillemets simples
-  DOCUMENT_ROOT=${DOCUMENT_ROOT:1:-1}
-  
-  [[ "$DOCUMENT_ROOT" =~ ^"$HOME"(/|$) ]] \
-    && DOCUMENT_ROOT="~${DOCUMENT_ROOT#$HOME}"
-  printf "%s %-50s %s\n" "$ENABLE" "$HOSTNAME" "$DOCUMENT_ROOT"

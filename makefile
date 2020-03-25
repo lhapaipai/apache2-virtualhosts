@@ -1,22 +1,17 @@
-install: copy-scripts copy-completion copy-share
+install:
+	cp a2ensite a2dissite a2lssites a2info a2mksite a2rmsite \
+		/usr/local/bin/
 
-uninstall: rm-scripts rm-completion rm-share
-
-copy-share: share/*
 	mkdir -p /usr/share/a2-virtualhosts
-	cp -r $^ /usr/share/a2-virtualhosts
+	cp -r share/* /usr/share/a2-virtualhosts
 
-copy-scripts: a2ensite a2dissite a2lssites a2info a2mksite a2rmsite
-	cp $^ /usr/local/bin/
+	cp share/apache.bash_completion /etc/bash_completion.d/
 
-copy-completion: apache2-scripts
-	cp $< /etc/bash_completion.d/
+uninstall:
+	rm -f /usr/local/bin/{a2ensite,a2dissite,a2lssites,a2info,a2mksite,a2rmsite}
+	rm -f /etc/bash_completion/apache.bash_completion
+	rm -fr /usr/share/a2-virtualhosts
 
 rm-scripts: a2ensite a2dissite a2lssites a2info a2mksite a2rmsite
 	rm $(addprefix /usr/local/bin/,$^)
 
-rm-completion: apache2-scripts
-	rm $(addprefix /etc/bash_completion.d/,$^)
-
-rm-share:
-	rm -r /usr/share/a2-virtualhosts
