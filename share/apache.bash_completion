@@ -5,54 +5,60 @@ function _a2_list_available_sites() {
   local DOMAIN
   local APACHE_CONF
   local DOMAINS
+  local LIST
 
   APACHE_CONF="$(a2info confdir)"
   DOMAIN=${COMP_WORDS[COMP_CWORD]}
   DOMAINS=$(ls "$APACHE_CONF/sites-available")
+  LIST=""
   while read -r LINE
   do
     FILENAME=$(basename "$LINE")
-    echo "${FILENAME%\.conf}"
+    LIST="$LIST ${FILENAME%\.conf}"
   done <<< $DOMAINS
 
-  COMPREPLY=( $(compgen -W "$DOMAINS" $DOMAIN ) )
+  COMPREPLY=( $(compgen -W "$LIST" $DOMAIN ) )
 }
 
 function _a2_list_enabled_sites() {
   local DOMAIN
   local APACHE_CONF
   local DOMAINS
+  local LIST
 
   APACHE_CONF="$(a2info confdir)"
   DOMAIN=${COMP_WORDS[COMP_CWORD]}
   DOMAINS=$(ls "$APACHE_CONF/sites-enabled")
+  LIST=""
   while read -r LINE
   do
     FILENAME=$(basename "$LINE")
-    echo "${FILENAME%\.conf}"
+    LIST="$LIST ${FILENAME%\.conf}"
   done <<< $DOMAINS
 
-  COMPREPLY=( $(compgen -W "$DOMAINS" $DOMAIN ) )
+  COMPREPLY=( $(compgen -W "$LIST" $DOMAIN ) )
 }
 
 function _a2_list_disabled_sites() {
   local DOMAIN
   local APACHE_CONF
   local DOMAINS
+  local LIST
 
   APACHE_CONF="$(a2info confdir)"
   DOMAIN=${COMP_WORDS[COMP_CWORD]}
   DOMAINS=$(ls "$APACHE_CONF/sites-available")
+  LIST=""
   while read -r LINE
   do
     FILENAME=$(basename "$LINE")
     if [ ! -L "$APACHE_CONF/sites-enabled/$FILENAME" ]
     then
-      echo "${FILENAME%\.conf}"
+      LIST="$LIST ${FILENAME%\.conf}"
     fi
   done <<< $DOMAINS
 
-  COMPREPLY=( $(compgen -W "$DOMAINS" $DOMAIN ) )
+  COMPREPLY=( $(compgen -W "$LIST" $DOMAIN ) )
 }
 
 
