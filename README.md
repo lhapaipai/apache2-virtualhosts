@@ -40,6 +40,7 @@ This command show all your virtual hosts (enabled are prefixed with *)
 | logdir  | Get log directory (ex: /var/log/httpd )                   |
 | confdir | Get config directory (ex: /etc/httpd/conf )               |
 | user    | Get apache user name (ex: httpd )                         |
+| certsdir| Get certs directory (ex: /etc/letsencrypt/live)           |
 | init    | This command create your directories for your conf files. |
 
 
@@ -52,6 +53,9 @@ This command show all your virtual hosts (enabled are prefixed with *)
 
 `a2dissite <domain>`
 
+### a2mkssl
+
+`a2mkssl <domain>`
 
 
 ## Uninstall

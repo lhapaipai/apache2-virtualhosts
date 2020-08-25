@@ -1,5 +1,5 @@
 BEGIN {
-  printf("<VirtualHost *:80>\n  ServerName uhh.uhh\n  Redirect \"/\" \"https://%s\"\n</VirtualHost>\n", domain);
+  printf("<VirtualHost *:80>\n  ServerName %s\n  Redirect \"/\" \"https://%s\"\n</VirtualHost>\n", domain, domain);
 }
 
 /<VirtualHost/ {

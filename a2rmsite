@@ -2,7 +2,7 @@
 
 APACHE_CONF="$(a2info confdir)"
 USER=$(whoami)
-CERTS_PATH='/etc/httpd/certs'
+CERTS_DIR="$(a2info certsdir)"
 
 if [ $# -ne 1 ];
 then
@@ -23,10 +23,10 @@ if [ "$USER" != root ]; then
   exit 5
 fi
 
-if [ -d "$CERTS_PATH/$DOMAIN" ]
+if [ -d "$CERTS_DIR/$DOMAIN" ]
 then
-  openssl ca -revoke "$CERTS_PATH/$DOMAIN/fullchain.pem" -crl_reason cessationOfOperation
-  rm -r "$CERTS_PATH/$DOMAIN"
+  openssl ca -revoke "$CERTS_DIR/$DOMAIN/fullchain.pem" -crl_reason cessationOfOperation
+  rm -r "$CERTS_DIR/$DOMAIN"
 fi
 
 [ -L "$APACHE_CONF/sites-enabled/$DOMAIN.conf" ] \
