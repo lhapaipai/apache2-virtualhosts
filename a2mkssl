@@ -46,17 +46,19 @@ fi
 LOGFILE="ErrorLog $APACHE_LOG/$DOMAIN-error.log\n"
 LOGFILE="$LOGFILE  CustomLog $APACHE_LOG/$DOMAIN-access.log vcombined"
 
-if [ ! -d "$CERTS_PATH/$DOMAIN" ]
-then
-  openssl req -new -keyout $CERTS_DIR/$DOMAIN/privkey.pem -nodes -out $CERTS_DIR/$DOMAIN/csr.pem
-  openssl ca -out $CERTS_DIR/$DOMAIN/fullchain.pem -in $CERTS_DIR/$DOMAIN/csr.pem
-fi
-
 if [ -f "/etc/letsencrypt/options-ssl-apache.conf" ]; then
   LETS_ENCRYPT=1
 else
   LETS_ENCRYPT=0
 fi
+
+if [ "$LETS_ENCRYPT" == 0 ] && [ ! -d "$CERTS_PATH/$DOMAIN" ]
+then
+  openssl req -new -keyout $CERTS_DIR/$DOMAIN/privkey.pem -nodes -out $CERTS_DIR/$DOMAIN/csr.pem
+  openssl ca -out $CERTS_DIR/$DOMAIN/fullchain.pem -in $CERTS_DIR/$DOMAIN/csr.pem
+fi
+
+
 
 mv "$APACHE_CONF/sites-available/$DOMAIN.conf" "$APACHE_CONF/sites-available/$DOMAIN.conf.bak"
 awk -v domain="$DOMAIN" \
