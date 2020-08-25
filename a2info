@@ -26,9 +26,23 @@ else
   exit 11
 fi
 
+if [ -d "/etc/letsencrypt/live" ]; then
+  CERTS_DIR="/etc/letsencrypt/live"
+elif [ -d "/etc/httpd" ]; then
+  CERTS_DIR="/etc/httpd/certs"
+elif [ -d "/etc/apache2" ]; then
+  CERTS_DIR="/etc/apache2/certs"
+else
+  echo "Unable to find certs directory." >&2
+  exit 11
+fi
+
 ACTION="$1"
 
 case "$ACTION" in
+  certsdir)
+    echo $CERTS_DIR
+    exit 0 ;;
   logdir)
     echo $APACHE_LOG
     exit 0 ;;
@@ -49,6 +63,7 @@ case "$ACTION" in
 
     [ ! -d "$APACHE_CONF/sites-enabled" ] && mkdir -p "$APACHE_CONF/sites-enabled"
     [ ! -d "$APACHE_CONF/sites-available" ] && mkdir -p "$APACHE_CONF/sites-available"
+    [ ! -d "$CERTS_DIR" ] && mkdir -p "$CERTS_DIR"
 
     grep -q '^IncludeOptional conf/sites-enabled/\*.conf$' $APACHE_CONF/httpd.conf \
       || echo "IncludeOptional conf/sites-enabled/*.conf" >> $APACHE_CONF/httpd.conf

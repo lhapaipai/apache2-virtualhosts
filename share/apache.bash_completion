@@ -65,3 +65,4 @@ function _a2_list_disabled_sites() {
 complete -F _a2_list_disabled_sites a2ensite
 complete -F _a2_list_enabled_sites a2dissite
 complete -F _a2_list_available_sites a2rmsite
+complete -F _a2_list_enabled_sites a2mkssl

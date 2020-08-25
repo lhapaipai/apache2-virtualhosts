@@ -11,7 +11,9 @@
   }
   if ($1 == "DocumentRoot") {
     documentRoot = substr($2, 2, length($2) - 2)
-    documentRoot = gensub("^" ENVIRON["HOME"], "~", "1", documentRoot)
+    if (fullname != 1) {
+      documentRoot = gensub("^" ENVIRON["HOME"], "~", "1", documentRoot)
+    }
   }
 
   if ($1 == "</VirtualHost>") {
@@ -31,6 +33,6 @@
     if (port != "443" && port != "80") {
       server = server ":" port
     }
-    printf("%s %-60s %s\n", enabled, protocol server, documentRoot)
+    printf("%s %-40s %s\n", enabled, protocol server, documentRoot)
   }
 }  

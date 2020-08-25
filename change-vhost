@@ -1,0 +1,3 @@
+#!/bin/bash
+
+awk -v domain=uhh.uhh -v certs_path="/etc/httpd/certs" -v letsencrypt=0 -f share/http2https.awk /etc/httpd/conf/sites-available/uhh.uhh.conf

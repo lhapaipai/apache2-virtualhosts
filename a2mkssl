@@ -1,0 +1,68 @@
+#!/bin/bash
+
+APACHE_CONF="$(a2info confdir)"
+APACHE_LOG="$(a2info logdir)"
+SHARE_DIR="$(a2info sharedir)"
+CERTS_DIR="$(a2info certsdir)"
+
+USER=$(whoami)
+EMAIL='postmaster@localhost'
+
+
+
+if [ $# -ne 1 ]; then
+  printf "Usage: %s <domain>\n" "$(basename $0)" >&2
+  exit 1
+fi
+
+DOMAIN="$1"
+
+if [ -d "$CERTS_DIR/$DOMAIN" ]
+then
+  echo "There is already key files for the certificate." >&2
+  exit 7
+fi
+
+DOCUMENT_ROOT=$(a2lssites --full | grep "http://$DOMAIN" | awk '{ print $3; }')
+echo $DOCUMENT_ROOT;
+if [ -z $DOCUMENT_ROOT ]; then
+  echo "document root non définit soit le site n'existe pas soit sa version ssl existe déjà"
+  exit 6
+fi
+
+if [ "$USER" != root ]; then
+  echo "need root privileges" >&2
+  exit 5
+fi
+
+if [ ! -f "$APACHE_CONF/sites-available/$DOMAIN.conf" ]
+then
+  echo "There is not conf file for this domain." >&2
+  exit 10
+fi
+
+
+
+LOGFILE="ErrorLog $APACHE_LOG/$DOMAIN-error.log\n"
+LOGFILE="$LOGFILE  CustomLog $APACHE_LOG/$DOMAIN-access.log vcombined"
+
+if [ ! -d "$CERTS_PATH/$DOMAIN" ]
+then
+  openssl req -new -keyout $CERTS_DIR/$DOMAIN/privkey.pem -nodes -out $CERTS_DIR/$DOMAIN/csr.pem
+  openssl ca -out $CERTS_DIR/$DOMAIN/fullchain.pem -in $CERTS_DIR/$DOMAIN/csr.pem
+fi
+
+if [ -f "/etc/letsencrypt/options-ssl-apache.conf" ]; then
+  LETS_ENCRYPT=1
+else
+  LETS_ENCRYPT=0
+fi
+
+mv "$APACHE_CONF/sites-available/$DOMAIN.conf" "$APACHE_CONF/sites-available/$DOMAIN.conf.bak"
+awk -v domain="$DOMAIN" \
+  -v certs_dir="$CERTS_DIR" \
+  -v letsencrypt="$LETS_ENCRYPT" \
+  -f $SHARE_DIR/http2https.awk \
+  "$APACHE_CONF/sites-available/$DOMAIN.conf.bak" > "$APACHE_CONF/sites-available/$DOMAIN.conf"
+
+apachectl graceful

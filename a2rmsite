@@ -2,6 +2,7 @@
 
 APACHE_CONF="$(a2info confdir)"
 USER=$(whoami)
+CERTS_PATH='/etc/httpd/certs'
 
 if [ $# -ne 1 ];
 then
@@ -20,6 +21,12 @@ fi
 if [ "$USER" != root ]; then
   echo "need root privileges" >&2
   exit 5
+fi
+
+if [ -d "$CERTS_PATH/$DOMAIN" ]
+then
+  openssl ca -revoke "$CERTS_PATH/$DOMAIN/fullchain.pem" -crl_reason cessationOfOperation
+  rm -r "$CERTS_PATH/$DOMAIN"
 fi
 
 [ -L "$APACHE_CONF/sites-enabled/$DOMAIN.conf" ] \

@@ -25,18 +25,8 @@ then
   exit 10
 fi
 
-read -p "Separate Log Files ? [y/N]" SEPARATE_LOGS
-case $SEPARATE_LOGS in
-  [oOyY])
-    SEPARATE_LOGS=1
-    LOGFILE="ErrorLog $APACHE_LOG/$DOMAIN-error.log\n"
-    LOGFILE="$LOGFILE  CustomLog $APACHE_LOG/$DOMAIN-access.log vcombined"
-    ;;
-  *)
-    SEPARATE_LOGS=0
-    LOGFILE=""
-    ;;
-esac
+LOGFILE="ErrorLog $APACHE_LOG/$DOMAIN-error.log\n"
+LOGFILE="$LOGFILE  CustomLog $APACHE_LOG/$DOMAIN-access.log vcombined"
 
 echo -e "
 <VirtualHost *:80>

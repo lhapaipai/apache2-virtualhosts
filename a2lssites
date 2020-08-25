@@ -3,8 +3,20 @@
 APACHE_CONF="$(a2info confdir)"
 SHARE_DIR="$(a2info sharedir)"
 
+if [ $# -gt 1 ];
+then
+  printf "Usage: %s [--full]\n" "$(basename $0)" >&2
+  exit 1
+fi
+
+if [ "$1" == '--full' ]; then
+  FULLNAME=1
+else
+  FULLNAME=0
+fi
+
 for CONF_FILE in "$APACHE_CONF/sites-available"/*.conf
 do
-  awk -f $SHARE_DIR/find-sites.awk "$CONF_FILE"
+  awk -v fullname=$FULLNAME -f $SHARE_DIR/find-sites.awk "$CONF_FILE"
 done
 
